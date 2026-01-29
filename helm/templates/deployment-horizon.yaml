@@ -1,0 +1,68 @@
+{{- if .Values.horizon.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "app.fullname" . }}-horizon
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+    app.kubernetes.io/component: horizon
+spec:
+  {{- if not .Values.horizon.autoscaling.enabled }}
+  replicas: {{ .Values.horizon.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "app.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: horizon
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "app.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: horizon
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "app.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        {{- include "app.initContainers.waitForDependencies" . | nindent 8 }}
+        {{- include "app.initContainers.waitForWebService" . | nindent 8 }}
+      containers:
+        - name: horizon
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.cli.repository }}:{{ .Values.cli.tag }}"
+          imagePullPolicy: {{ .Values.cli.pullPolicy }}
+          command:
+            - php
+            - artisan
+            - horizon
+          envFrom:
+            - configMapRef:
+                name: {{ include "app.fullname" . }}
+            - secretRef:
+                name: {{ include "app.fullname" . }}
+          resources:
+            {{- toYaml .Values.horizon.resources | nindent 12 }}
+      {{- with .Values.horizon.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.horizon.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.horizon.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

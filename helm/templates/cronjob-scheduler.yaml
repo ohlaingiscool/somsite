@@ -1,0 +1,62 @@
+{{- if .Values.scheduler.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "app.fullname" . }}-scheduler
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+    app.kubernetes.io/component: scheduler
+spec:
+  schedule: {{ .Values.scheduler.schedule | quote }}
+  successfulJobsHistoryLimit: {{ .Values.scheduler.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.scheduler.failedJobsHistoryLimit }}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            {{- include "app.selectorLabels" . | nindent 12 }}
+            app.kubernetes.io/component: scheduler
+        spec:
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          serviceAccountName: {{ include "app.serviceAccountName" . }}
+          securityContext:
+            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+          restartPolicy: OnFailure
+          initContainers:
+            {{- include "app.initContainers.waitForDependencies" . | nindent 12 }}
+            {{- include "app.initContainers.waitForWebService" . | nindent 12 }}
+          containers:
+            - name: scheduler
+              securityContext:
+                {{- toYaml .Values.securityContext | nindent 16 }}
+              image: "{{ .Values.cli.repository }}:{{ .Values.cli.tag }}"
+              imagePullPolicy: {{ .Values.cli.pullPolicy }}
+              command:
+                - php
+                - artisan
+                - schedule:run
+              envFrom:
+                - configMapRef:
+                    name: {{ include "app.fullname" . }}
+                - secretRef:
+                    name: {{ include "app.fullname" . }}
+              resources:
+                {{- toYaml .Values.scheduler.resources | nindent 16 }}
+          {{- with .Values.scheduler.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.scheduler.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.scheduler.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+{{- end }}

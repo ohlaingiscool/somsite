@@ -1,0 +1,64 @@
+# Local environment overrides
+environment: local
+
+image:
+  repository: laravel-community
+  tag: latest
+  pullPolicy: Never
+
+cli:
+  repository: laravel-community-cli
+  tag: latest
+  pullPolicy: Never
+
+app:
+  debug: true
+  url: "http://laravel-community.local"
+  env: local
+
+ingress:
+  enabled: true
+  hosts:
+    - host: laravel-community.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+web:
+  replicaCount: 1
+
+  autoscaling:
+    enabled: false
+
+horizon:
+  replicaCount: 1
+
+  autoscaling:
+    enabled: false
+
+mysql:
+  persistence:
+    size: 5Gi
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+
+redis:
+  auth:
+    password: ""
+
+  persistence:
+    size: 1Gi
+
+  resources:
+    limits:
+      cpu: 250m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi

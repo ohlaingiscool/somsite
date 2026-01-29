@@ -1,0 +1,264 @@
+# Global settings
+global:
+  imagePullPolicy: IfNotPresent
+  storageClass: ""
+
+# Application image
+image:
+  repository: ghcr.io/jonerickson/laravel-community
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# CLI image (for Horizon, scheduler, etc.)
+cli:
+  repository: ghcr.io/jonerickson/laravel-community-cli
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Image pull secrets for private registry
+imagePullSecrets: []
+
+# Application name
+nameOverride: ""
+fullnameOverride: ""
+
+# Environment (local, staging, production)
+environment: local
+
+# Application configuration
+app:
+  name: "Laravel Community"
+  key: ""
+  debug: false
+  url: "http://localhost"
+  env: production
+  timezone: UTC
+  locale: en
+
+# Ingress configuration
+ingress:
+  enabled: false
+  className: nginx
+  annotations:
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+    # nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "32"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "64k"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "5"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+  hosts:
+    - host: laravel-community.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: laravel-community-tls
+  #    hosts:
+  #      - laravel-community.com
+
+# Web/FPM deployment
+web:
+  enabled: true
+  replicaCount: 1
+
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# Horizon worker deployment
+horizon:
+  enabled: true
+  replicaCount: 1
+
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# Scheduler CronJob
+scheduler:
+  enabled: true
+  schedule: "* * * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# MySQL configuration
+mysql:
+  enabled: true
+  image:
+    repository: mysql
+    tag: "8.4"
+
+  auth:
+    database: laravel-community
+    password: ""
+    username: root
+
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: ""
+
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 4Gi
+    requests:
+      cpu: 500m
+      memory: 2Gi
+
+  service:
+    port: 3306
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# Redis configuration
+redis:
+  enabled: true
+  image:
+    repository: redis
+    tag: "7-alpine"
+
+  auth:
+    username: ""
+    password: ""
+
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClass: ""
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  service:
+    port: 6379
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# Payment processor
+payments:
+  driver: null
+
+# Payout processor
+payouts:
+  driver: null
+  minAmount: 10.00
+  maxAmount: 10000.00
+  statementDescriptor: Laravel Community
+
+# Laravel configuration
+laravel:
+  broadcast:
+    connection: redis
+
+  cache:
+    store: redis
+
+  cashier:
+    currency: USD
+    locale: en
+
+  csp:
+    enabled: false
+
+  database:
+    connection: mysql
+
+  filesystems:
+    disk: s3
+
+  logs:
+    channel: stderr
+    level: debug
+
+  mail:
+    mailer: smtp
+    host: 127.0.0.1
+    port: 1025
+    username: ""
+    password: ""
+    encryption: null
+    fromAddress: hello@example.com
+    fromName: "Laravel Community"
+
+  queue:
+    connection: redis
+
+  scout:
+    driver: database
+    prefix: ""
+
+  session:
+    domain: null
+    driver: redis
+    encrypt: false
+    lifetime: 120
+    path: /
+
+# Service account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# Pod annotations
+podAnnotations: {}
+
+# Pod security context
+podSecurityContext:
+  fsGroup: 33
+
+# Container security context
+securityContext: {}

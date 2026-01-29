@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "app.fullname" . }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+data:
+  AUTORUN_ENABLED: "true"
+  AUTORUN_LARAVEL_MIGRATION_ISOLATION: "true"
+
+  API_NAME: {{ .Values.app.name | quote }}
+
+  APP_DEBUG: {{ .Values.app.debug | quote }}
+  APP_ENV: {{ .Values.app.env | quote }}
+  APP_LOCALE: {{ .Values.app.locale | quote }}
+  APP_NAME: {{ .Values.app.name | quote }}
+  APP_URL: {{ .Values.app.url | quote }}
+
+  BROADCAST_CONNECTION: {{ .Values.laravel.broadcast.connection | quote }}
+
+  CACHE_STORE: {{ .Values.laravel.cache.store | quote }}
+
+  CASHIER_CURRENCY: {{ .Values.laravel.cashier.currency | quote }}
+  CASHIER_CURRENCY_LOCALE: {{ .Values.laravel.cashier.locale | quote }}
+
+  CSP_ENABLED: {{ .Values.laravel.csp.enabled | quote }}
+
+  DB_CONNECTION: {{ .Values.laravel.database.connection | quote }}
+  DB_HOST: {{ include "app.mysql.host" . | quote }}
+  DB_PORT: {{ .Values.mysql.service.port | quote }}
+  DB_DATABASE: {{ .Values.mysql.auth.database | quote }}
+  DB_USERNAME: {{ .Values.mysql.auth.username | quote }}
+
+  FILESYSTEM_DISK: {{ .Values.laravel.filesystems.disk | quote }}
+
+  LOG_CHANNEL: {{ .Values.laravel.logs.channel | quote }}
+  LOG_LEVEL: {{ .Values.laravel.logs.level | quote }}
+
+  MAIL_MAILER: {{ .Values.laravel.mail.mailer | quote }}
+  MAIL_HOST: {{ .Values.laravel.mail.host | quote }}
+  MAIL_PORT: {{ .Values.laravel.mail.port | quote }}
+  MAIL_ENCRYPTION: {{ .Values.laravel.mail.encryption | quote }}
+  MAIL_FROM_ADDRESS: {{ .Values.laravel.mail.fromAddress | quote }}
+  MAIL_FROM_NAME: {{ .Values.laravel.mail.fromName | quote }}
+
+  PAYMENT_DRIVER: {{ .Values.payments.driver | quote }}
+
+  PAYOUT_DRIVER: {{ .Values.payouts.driver | quote }}
+  PAYOUT_MAXIMUM_AMOUNT: {{ .Values.payouts.maxAmount | quote }}
+  PAYOUT_MINIMUM_AMOUNT: {{ .Values.payouts.minAmount | quote }}
+  PAYOUT_STATEMENT_DESCRIPTOR: {{ .Values.payouts.statementDescriptor | quote }}
+
+  QUEUE_CONNECTION: {{ .Values.laravel.queue.connection | quote }}
+
+  REDIS_HOST: {{ include "app.redis.host" . | quote }}
+  REDIS_PASSWORD: {{ .Values.redis.auth.password | quote }}
+  REDIS_PORT: {{ .Values.redis.service.port | quote }}
+  REDIS_USERNAME: {{ .Values.redis.auth.username | quote }}
+
+  SCOUT_DRIVER: {{ .Values.laravel.scout.driver | quote }}
+  SCOUT_PREFIX: {{ .Values.laravel.scout.prefix | quote }}
+
+  SESSION_DOMAIN  : {{ .Values.laravel.session.domain | quote }}
+  SESSION_DRIVER: {{ .Values.laravel.session.driver | quote }}
+  SESSION_ENCRYPT: {{ .Values.laravel.session.encrypt | quote }}
+  SESSION_LIFETIME: {{ .Values.laravel.session.lifetime | quote }}
+  SESSION_PATH: "120"
